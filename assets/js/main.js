@@ -46,23 +46,55 @@ const nameInput1 = document.getElementById("cfg-name-1");
 const nameInput2 = document.getElementById("cfg-name-2");
 const turnInput = document.getElementById("cfg-turn-seconds");
 const reserveInput = document.getElementById("cfg-reserve-seconds");
+const matchInput = document.getElementById("cfg-match-seconds");
+const modeRadios = Array.from(document.querySelectorAll('input[name="cfg-mode"]'));
+const perTurnGroup = document.getElementById("cfg-per-turn-group");
+const perMatchGroup = document.getElementById("cfg-per-match-group");
 const errorEl = document.getElementById("cfg-error");
 const clearBtn = document.getElementById("clear-config-btn");
+
+function selectedMode() {
+  const checked = modeRadios.find((r) => r.checked);
+  return checked && checked.value === "per-match" ? "per-match" : "per-turn";
+}
+
+function applyModeVisibility() {
+  const mode = selectedMode();
+  perTurnGroup.hidden = mode !== "per-turn";
+  perMatchGroup.hidden = mode !== "per-match";
+}
 
 function populateForm(config) {
   nameInput1.value = config.player1Name === "Player 1" ? "" : config.player1Name;
   nameInput2.value = config.player2Name === "Player 2" ? "" : config.player2Name;
-  turnInput.value = String(config.turnSeconds);
-  reserveInput.value = String(config.reserveSeconds);
+  // Storage holds seconds; the form holds whole minutes (feature 003).
+  // Math.round tolerates the (non-occurring in normal use) case of legacy
+  // values that aren't exact multiples of 60.
+  turnInput.value = String(Math.round((config.turnSeconds || 0) / 60));
+  reserveInput.value = String(Math.round((config.reserveSeconds || 0) / 60));
+  matchInput.value = String(Math.round((config.matchSeconds || 0) / 60));
+  const mode = config.mode === "per-match" ? "per-match" : "per-turn";
+  for (const r of modeRadios) r.checked = r.value === mode;
+  applyModeVisibility();
 }
 populateForm(appState.config);
 
+for (const r of modeRadios) {
+  r.addEventListener("change", applyModeVisibility);
+}
+
 function readForm() {
+  // Multiply by 60 to convert the form's minutes back to seconds before
+  // handing the values to the validator. The validator picks per-turn vs.
+  // per-match fields based on `mode`; the inactive mode's values pass
+  // through so toggling preserves them.
   return {
     player1Name: nameInput1.value,
     player2Name: nameInput2.value,
-    turnSeconds: turnInput.value,
-    reserveSeconds: reserveInput.value,
+    mode: selectedMode(),
+    turnSeconds: Number(turnInput.value) * 60,
+    reserveSeconds: Number(reserveInput.value) * 60,
+    matchSeconds: Number(matchInput.value) * 60,
   };
 }
 

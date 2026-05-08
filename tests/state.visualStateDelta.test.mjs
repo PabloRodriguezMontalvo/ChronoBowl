@@ -75,3 +75,18 @@ test("missing prev or next is a no-op", () => {
   assert.deepEqual(derivePlayerVisualStateDelta(null, match(player(5, 0), player(5, 0))), []);
   assert.deepEqual(derivePlayerVisualStateDelta(match(player(5, 0), player(5, 0)), null), []);
 });
+
+// ---------------------------------------------------------------------------
+// Feature 004: in match-clock mode, reserveRemainingMs is always 0, so a
+// normal → exhausted transition must emit ONLY enteredExhausted (FR-008).
+// This is structural: the helper does not need a `mode` parameter.
+// ---------------------------------------------------------------------------
+
+test("match-clock mode (reserve always 0) emits only enteredExhausted on flag-fall", () => {
+  // Simulate a per-match player whose match clock crossed zero.
+  const prev = match(player(2000, 0), player(5000, 0));
+  const next = match(player(0, 0), player(5000, 0));
+  const tags = derivePlayerVisualStateDelta(prev, next);
+  assert.deepEqual(tags, ["p1:enteredExhausted"]);
+  assert.equal(tags.includes("p1:enteredReserve"), false);
+});

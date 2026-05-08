@@ -5,15 +5,18 @@
 
 const STORAGE_KEY = "bbtimer.config.v1";
 const SCHEMA_VERSION = 1;
+const DEFAULT_MATCH_SECONDS = 4500; // 75 min × 60
 
-/** @returns {{schemaVersion:number, player1Name:string, player2Name:string, turnSeconds:number, reserveSeconds:number}} */
+/** @returns {{schemaVersion:number, player1Name:string, player2Name:string, mode:"per-turn"|"per-match", turnSeconds:number, reserveSeconds:number, matchSeconds:number}} */
 export function defaultStoredConfig() {
   return {
     schemaVersion: SCHEMA_VERSION,
     player1Name: "Player 1",
     player2Name: "Player 2",
+    mode: "per-turn",
     turnSeconds: 240,
     reserveSeconds: 0,
+    matchSeconds: DEFAULT_MATCH_SECONDS,
   };
 }
 
@@ -53,12 +56,23 @@ export function loadConfig() {
     return defaultStoredConfig();
   }
 
+  // Feature 004: `mode` and `matchSeconds` are additive. Missing fields on
+  // legacy saves default to per-turn / 75-min standard so previous users
+  // see byte-for-byte unchanged behaviour (SC-004).
+  const mode = parsed.mode === "per-match" ? "per-match" : "per-turn";
+  const matchSeconds =
+    typeof parsed.matchSeconds === "number" && parsed.matchSeconds > 0
+      ? parsed.matchSeconds
+      : DEFAULT_MATCH_SECONDS;
+
   return {
     schemaVersion: SCHEMA_VERSION,
     player1Name: parsed.player1Name,
     player2Name: parsed.player2Name,
+    mode,
     turnSeconds: parsed.turnSeconds,
     reserveSeconds: parsed.reserveSeconds,
+    matchSeconds,
   };
 }
 
@@ -69,12 +83,15 @@ export function loadConfig() {
 export function saveConfig(config) {
   if (typeof localStorage === "undefined") return;
   try {
+    const matchSecondsNum = Number(config.matchSeconds);
     const payload = {
       schemaVersion: SCHEMA_VERSION,
       player1Name: String(config.player1Name ?? "Player 1"),
       player2Name: String(config.player2Name ?? "Player 2"),
+      mode: config.mode === "per-match" ? "per-match" : "per-turn",
       turnSeconds: Number(config.turnSeconds),
       reserveSeconds: Number(config.reserveSeconds),
+      matchSeconds: Number.isFinite(matchSecondsNum) && matchSecondsNum > 0 ? matchSecondsNum : DEFAULT_MATCH_SECONDS,
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
   } catch (err) {
