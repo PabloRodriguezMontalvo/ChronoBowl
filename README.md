@@ -6,7 +6,7 @@ A simple chess-clock-style turn timer for **Blood Bowl** matches. Two named play
 - No build step, no backend, no runtime dependencies
 - Deployed as a static GitHub Pages site
 
-> Live site: _add the GitHub Pages URL here once deployed_
+> Live site: <https://pablorodriguezmontalvo.github.io/ChronoBowl/>
 
 ## How to run locally
 
