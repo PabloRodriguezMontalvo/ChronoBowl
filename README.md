@@ -1,6 +1,9 @@
 # Cronómetro Blood Bowl
 
-A simple chess-clock-style turn timer for **Blood Bowl** matches. Two named players share one device (laptop or phone), alternate turns with a single key (or tap), and pause whenever play is interrupted. Includes an optional reserve time pool that engages automatically when the per-turn timer runs out.
+A simple chess-clock-style turn timer for **Blood Bowl** matches. Two named players share one device (laptop or phone), alternate turns with a single key (or tap), and pause whenever play is interrupted. Two timing modes:
+
+- **Por turno** — per-turn budget plus an optional reserve pool that engages automatically when the per-turn timer runs out.
+- **Por partida** — single chess-style budget per player (default 75 min), no reserve. The active player's clock counts down; when it hits zero the match ends with a "¡Tiempo agotado!" banner.
 
 - 100% client-side — HTML, CSS, vanilla JavaScript
 - No build step, no backend, no runtime dependencies
@@ -54,4 +57,4 @@ Audio cues are short procedurally-generated WAV files (≤24 KB total, peak ≤ 
 A "🔊 Sonido / 🔇 Silencio" button under the timers toggles all sound; the choice is
 persisted in localStorage. See [`LICENSE-AUDIO.md`](LICENSE-AUDIO.md) for asset licensing.
 
-See [`specs/001-bloodbowl-timer/`](specs/001-bloodbowl-timer/) and [`specs/002-turn-sounds/`](specs/002-turn-sounds/) for the full specifications, plans, and tasks.
+See [`specs/001-bloodbowl-timer/`](specs/001-bloodbowl-timer/), [`specs/002-turn-sounds/`](specs/002-turn-sounds/), [`specs/003-minutes-input/`](specs/003-minutes-input/), and [`specs/004-match-clock-mode/`](specs/004-match-clock-mode/) for the full specifications, plans, and tasks.

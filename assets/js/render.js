@@ -34,6 +34,9 @@ function dom() {
       document.getElementById("player-1-reserve"),
       document.getElementById("player-2-reserve"),
     ],
+    reserveLabels: Array.from(document.querySelectorAll(".reserve-label")),
+    matchOverBanner: document.getElementById("match-over-banner"),
+    matchOverText: document.getElementById("match-over-text"),
   };
   return cached;
 }
@@ -80,6 +83,15 @@ export function render(appState) {
   d.names[0].textContent = match.players[0].name;
   d.names[1].textContent = match.players[1].name;
 
+  // Hide reserve display in match-clock mode (FR-013).
+  const isMatchClock = match.mode === "per-match";
+  for (let i = 0; i < 2; i++) {
+    d.reserve[i].hidden = isMatchClock;
+  }
+  for (const lbl of d.reserveLabels) lbl.hidden = isMatchClock;
+  d.cards[0].classList.toggle("is-match-clock", isMatchClock);
+  d.cards[1].classList.toggle("is-match-clock", isMatchClock);
+
   // Clock displays
   for (let i = 0; i < 2; i++) {
     d.turn[i].textContent = formatMs(match.players[i].turnRemainingMs);
@@ -89,9 +101,20 @@ export function render(appState) {
   // Visual state per card
   for (let i = 0; i < 2; i++) {
     const isActive =
-      i === match.activeIndex && match.phase !== "idle" && match.phase !== "ready";
+      i === match.activeIndex && match.phase !== "idle" && match.phase !== "ready" && match.phase !== "match-over";
     if (!isActive) {
-      applyCardClasses(d.cards[i], ["is-inactive"]);
+      // In match-over phase, the card whose clock hit zero still gets the
+      // exhausted treatment (FR-007).
+      if (match.phase === "match-over" && match.players[i].turnRemainingMs === 0) {
+        applyCardClasses(d.cards[i], [
+          "is-active-exhausted",
+          "animate__animated",
+          "animate__shakeX",
+          "animate__infinite",
+        ]);
+      } else {
+        applyCardClasses(d.cards[i], ["is-inactive"]);
+      }
       continue;
     }
     const vs = playerVisualState(match.players[i]);
@@ -125,10 +148,21 @@ export function render(appState) {
   d.pausedBanner.hidden = !isPaused;
   d.pauseBtn.textContent = isPaused ? "▶ Reanudar" : "⏸ Pausa";
 
+  // Match-over banner (feature 004)
+  const isMatchOver = match.phase === "match-over";
+  if (d.matchOverBanner) {
+    d.matchOverBanner.hidden = !isMatchOver;
+    if (isMatchOver && d.matchOverText) {
+      const exhaustedIdx = match.players.findIndex((p) => p.turnRemainingMs === 0);
+      const exhaustedName = exhaustedIdx >= 0 ? match.players[exhaustedIdx].name : "";
+      d.matchOverText.textContent = `¡Tiempo agotado para ${exhaustedName}!`;
+    }
+  }
+
   // Start vs Pause button visibility (phase 'ready' = pre-start)
   const isReady = match.phase === "ready";
   if (d.startBtn) d.startBtn.hidden = !isReady;
-  d.pauseBtn.hidden = isReady;
+  d.pauseBtn.hidden = isReady || isMatchOver;
 
   // Mute toggle (feature 002)
   if (d.muteBtn) {

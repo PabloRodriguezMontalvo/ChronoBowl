@@ -1,21 +1,33 @@
 /* ============================================================================
    Cronómetro Blood Bowl — app styles
    Layered on top of Bulma 1.x and Animate.css 4.x.
+   Palette: morado (primary), dorado (accent), blanco, negro.
    Six visual states (per contracts/ui-contract.md §2):
      inactive · active-normal · active-in-reserve · active-exhausted · paused · idle
+   All foreground/background pairs target WCAG AA (≥4.5:1 normal, ≥3:1 large).
    ============================================================================ */
 
 :root {
+  /* Base palette */
+  --color-purple-deep: hsl(251, 79%, 15%);   /* page background */
+  --color-purple-mid:  hsl(252, 60%, 60%);   /* active-normal accent */
+  --color-purple-soft: hsl(252, 45%, 78%);   /* subtle highlights */
+  --color-gold:        hsl(45, 85%, 60%);    /* dorado: links, kbd, in-reserve */
+  --color-gold-deep:   hsl(40, 75%, 45%);    /* dorado oscuro: borders */
+  --color-white:       #ffffff;
+  --color-black:       #1a1a1a;
+
+  /* State tokens (kept names for backwards compatibility) */
   --color-inactive-bg: hsl(0, 0%, 96%);
-  --color-inactive-fg: hsl(0, 0%, 40%);
-  --color-active-normal-bg: hsl(252, 60%, 60%);   /* matches Bulma is-primary purple-ish */
-  --color-active-normal-fg: #ffffff;
-  --color-active-warning-bg: hsl(35, 95%, 55%);   /* Bulma is-warning */
-  --color-active-warning-fg: #1a1a1a;
-  --color-active-danger-bg: hsl(348, 86%, 55%);   /* Bulma is-danger */
-  --color-active-danger-fg: #ffffff;
+  --color-inactive-fg: hsl(0, 0%, 30%);
+  --color-active-normal-bg: var(--color-purple-mid);
+  --color-active-normal-fg: var(--color-white);
+  --color-active-warning-bg: var(--color-gold);          /* dorado, no naranja */
+  --color-active-warning-fg: var(--color-black);
+  --color-active-danger-bg: hsl(348, 86%, 50%);          /* carmesí: peligro, mantenido por semántica */
+  --color-active-danger-fg: var(--color-white);
   --color-paused-banner-bg: rgba(20, 20, 20, 0.85);
-  --color-paused-banner-fg: #ffffff;
+  --color-paused-banner-fg: var(--color-white);
 }
 
 /* --- Layout helpers (replaces inline style="..." usage) ---------------- */
@@ -30,7 +42,8 @@ html, body {
 }
 
 body {
-  background: hsl(0, 0%, 98%);
+  background: var(--color-purple-deep);
+  color: var(--color-white);
   min-height: 100vh;
   margin: 0;
 }
@@ -38,6 +51,55 @@ body {
 /* --- Configuration screen --------------------------------------------- */
 #config-screen .container {
   max-width: 480px;
+}
+
+/* Bulma's default heading colours assume a light page; on the deep-purple
+   background they fail WCAG. Force white / translucent-white for accessibility. */
+#config-screen .title,
+#config-screen .subtitle {
+  color: var(--color-white);
+}
+#config-screen .subtitle {
+  color: hsla(0, 0%, 100%, 0.85);  /* ~12:1 contrast on deep purple */
+}
+
+/* Help / shortcut text outside the form box. */
+#config-screen .content,
+#config-screen .content p,
+#config-screen .content .has-text-grey,
+#config-screen .has-text-grey {
+  color: hsla(0, 0%, 100%, 0.78) !important; /* ~10:1 on deep purple */
+}
+
+/* Accent: keyboard hints in dorado. */
+#config-screen kbd {
+  background: var(--color-gold);
+  color: var(--color-black);
+  border-color: var(--color-gold-deep);
+  border-radius: 4px;
+  padding: 0.05em 0.4em;
+  font-weight: 700;
+  box-shadow: 0 1px 0 var(--color-gold-deep);
+}
+
+/* Links inside the config screen → dorado for visibility on dark bg. */
+#config-screen a {
+  color: var(--color-gold);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+}
+#config-screen a:hover,
+#config-screen a:focus {
+  color: hsl(45, 95%, 75%);
+}
+
+/* The form .box keeps Bulma's white background — inputs and labels are
+   already accessible on white. We just give it a subtle gold edge so it
+   reads as the primary action surface. */
+#config-form.box {
+  border: 1px solid hsla(45, 85%, 60%, 0.25);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
 }
 
 #config-form .button.is-large {
@@ -205,6 +267,25 @@ body {
   min-width: 44px;
   font-weight: 600;
 }
+
+/* --- Match-clock mode (feature 004) ---------------------------------- */
+/* When the per-match mode is active the reserve label/clock are [hidden],
+   so the single big match clock is the only thing on the card. The card
+   already centers its content via flexbox; we just trim the gap that the
+   absent reserve block leaves behind. */
+.player-card.is-match-clock .reserve-label,
+.player-card.is-match-clock .reserve-clock {
+  display: none !important;
+}
+
+.match-over-banner {
+  position: sticky;
+  bottom: 4.5rem; /* sit above the .match-controls bar */
+  margin: 0 0.5rem;
+  z-index: 6;
+  font-size: clamp(1rem, 4vw, 1.5rem);
+}
+.match-over-banner[hidden] { display: none; }
 
 /* --- Responsive ------------------------------------------------------- */
 @media (max-width: 600px) {

@@ -48,7 +48,7 @@ in isolation, and unblocks both user stories.
 
 **⚠️ CRITICAL**: All Phase-3 / Phase-4 tasks depend on T002.
 
-- [ ] T001 [P] Create `tests/state.validateConfig.test.mjs` covering the new
+- [X] T001 [P] Create `tests/state.validateConfig.test.mjs` covering the new
   integer guard and the new error wording. Cases (use `node:test` and
   `node:assert/strict`):
   (a) `validateConfig({turnSeconds: 240, reserveSeconds: 300, player1Name:"a", player2Name:"b"})`
@@ -67,7 +67,7 @@ in isolation, and unblocks both user stories.
   (g) `validateConfig({turnSeconds: 60, reserveSeconds: 0, ...})` returns
   `{config}` (1 minute strict mode is valid). Make T002 pass
 
-- [ ] T002 Update `validateConfig(raw)` in `assets/js/state.js`:
+- [X] T002 Update `validateConfig(raw)` in `assets/js/state.js`:
   (i) reword every error message per [data-model.md](data-model.md) "Validator surface change"
   (lower bound says "al menos 1 minuto", upper bound says "60 minutos",
   reserve message stays in minutes too);
@@ -97,7 +97,7 @@ Reload — fields show `3` and `4` (not `180` / `240`).
 
 ### Implementation for User Story 1
 
-- [ ] T003 [US1] Edit [index.html](../../index.html) per [contracts/form-contract.md](contracts/form-contract.md):
+- [X] T003 [US1] Edit [index.html](../../index.html) per [contracts/form-contract.md](contracts/form-contract.md):
   (i) the per-turn `<label>` text from `Tiempo por turno (segundos)` →
   `Tiempo por turno (minutos)`;
   (ii) on `#cfg-turn-seconds` change `min="1"` → `min="1"`,
@@ -113,7 +113,7 @@ Reload — fields show `3` and `4` (not `180` / `240`).
   internal vocabulary and preserving them avoids touching unrelated
   cached lookups in `main.js`
 
-- [ ] T004 [US1] In [assets/js/main.js](../../assets/js/main.js), update
+- [X] T004 [US1] In [assets/js/main.js](../../assets/js/main.js), update
   `populateForm(config)` so the two number inputs receive **minutes**:
   replace
   `turnInput.value = String(config.turnSeconds);` with
@@ -121,7 +121,7 @@ Reload — fields show `3` and `4` (not `180` / `240`).
   and the same transformation for `reserveInput.value`. The `Math.round`
   tolerates legacy values that are not exact multiples of 60 (R-004).
 
-- [ ] T005 [US1] In the same file, update `readForm()` to convert the inputs
+- [X] T005 [US1] In the same file, update `readForm()` to convert the inputs
   from minutes to seconds before passing them to `validateConfig`:
   replace the existing
   `turnSeconds: turnInput.value`
@@ -134,7 +134,7 @@ Reload — fields show `3` and `4` (not `180` / `240`).
   Empty inputs become `NaN * 60 = NaN`, which `validateConfig` already
   rejects with the "número entero positivo de minutos" message.
 
-- [ ] T006 [US1] Verify SC-002 by `grep_search`-ing the repo for
+- [X] T006 [US1] Verify SC-002 by `grep_search`-ing the repo for
   `segundos|seconds` and confirming the only remaining occurrences are
   inside `assets/js/state.js` (parameter names — internal) and the
   `specs/` directory (history). No occurrences in `index.html`. If any
@@ -156,7 +156,7 @@ error says "número entero de minutos".
 
 ### Implementation for User Story 2
 
-- [ ] T007 [US2] **Verification only** — no code changes. T002 already
+- [X] T007 [US2] **Verification only** — no code changes. T002 already
   reworded every message and added the integer-minute guard; T005 already
   multiplies the form value by 60 before handing it to `validateConfig`,
   so a user-typed `1.5` becomes `90`, which fails the
@@ -173,7 +173,7 @@ independent tests; the entire feature is shippable.
 
 ## Phase 5: Polish & Cross-Cutting Concerns
 
-- [ ] T008 [P] Run `node --test tests` and confirm **61** tests pass
+- [X] T008 [P] Run `node --test tests` and confirm **61** tests pass
   (54 pre-existing + 7 new from T001). Fix the implementation, not
   the tests, if any fail
 - [ ] T009 Run the full manual walkthrough in [quickstart.md](quickstart.md)
@@ -190,7 +190,7 @@ independent tests; the entire feature is shippable.
   `localStorage["bbtimer.config.v1"]` to a legacy
   `{...,"turnSeconds":240,"reserveSeconds":300}` and reload. Confirm
   the form shows `4` and `5`, not `240` and `300`
-- [ ] T013 [P] Update README.md if it mentions seconds-based defaults
+- [X] T013 [P] Update README.md if it mentions seconds-based defaults
   anywhere (search for `240` or `segundos`); reword to minute terms.
   If no such mention exists, this task is a no-op
 - [ ] T014 Deploy: commit the `003-minutes-input` branch, merge to
