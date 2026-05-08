@@ -175,6 +175,42 @@ export function playerVisualState(player) {
 }
 
 /**
+ * Pure helper (feature 002): compare two consecutive match snapshots and
+ * return the audio-cue tags that fired in the transition. See
+ * specs/002-turn-sounds/data-model.md.
+ *
+ * - Each player can emit at most one tag per call.
+ * - Order: p1 first, then p2.
+ * - "Backwards" transitions (e.g. exhausted→normal after reset) emit nothing;
+ *   the audio module clears its already-played flags via lifecycle hooks.
+ *
+ * @returns {string[]} subset of
+ *   "p1:enteredReserve" | "p1:enteredExhausted" | "p2:enteredReserve" | "p2:enteredExhausted"
+ */
+export function derivePlayerVisualStateDelta(prevMatch, nextMatch) {
+  const out = [];
+  if (!prevMatch || !nextMatch) return out;
+  for (let i = 0; i < 2; i++) {
+    const prevPlayer = prevMatch.players?.[i];
+    const nextPlayer = nextMatch.players?.[i];
+    if (!prevPlayer || !nextPlayer) continue;
+    const prev = playerVisualState(prevPlayer);
+    const next = playerVisualState(nextPlayer);
+    if (prev === next) continue;
+    const prefix = `p${i + 1}`;
+    if (next === "in_reserve" && prev === "normal") {
+      out.push(`${prefix}:enteredReserve`);
+    } else if (next === "exhausted" && (prev === "in_reserve" || prev === "normal")) {
+      // Includes the background-skip case (normal → exhausted) where we
+      // collapse to a single "exhausted" tag and skip "enteredReserve".
+      out.push(`${prefix}:enteredExhausted`);
+    }
+    // Any other transition (backwards via reset, etc.) is intentionally ignored.
+  }
+  return out;
+}
+
+/**
  * Validate raw form input. Returns { config } on success, { error } on failure.
  */
 export function validateConfig(raw) {

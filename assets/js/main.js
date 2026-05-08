@@ -12,20 +12,26 @@ import {
   pause as pauseAction,
   reset as resetAction,
   validateConfig,
+  derivePlayerVisualStateDelta,
 } from "./state.js";
 import { render } from "./render.js";
 import { installInput } from "./input.js";
 import { loadConfig, saveConfig, clearConfig } from "./storage.js";
+import { createAudio } from "./audio.js";
 
 // ---------------------------------------------------------------------------
 // App state — single mutable holder; reducers return new immutable matches.
 // ---------------------------------------------------------------------------
 
+const audio = createAudio();
+
 const appState = {
   config: { ...defaultConfig(), ...loadConfig() },
   match: null,
+  muted: audio.getMuted(),
 };
 appState.match = idleMatch(appState.config);
+let prevMatch = appState.match;
 
 function now() {
   return performance.now();
@@ -80,7 +86,10 @@ form.addEventListener("submit", (event) => {
   showError(null);
   appState.config = result.config;
   saveConfig(appState.config);
-  appState.match = startMatch(appState.config, now());
+  // Create the match in 'ready' phase: timers visible but not running.
+  // The user clicks the Start button (audio unlock + actual run).
+  appState.match = { ...idleMatch(appState.config), phase: "ready" };
+  prevMatch = appState.match;
   render(appState);
 });
 
@@ -97,6 +106,17 @@ clearBtn.addEventListener("click", () => {
 
 const pauseBtn = document.getElementById("pause-btn");
 const resetBtn = document.getElementById("reset-btn");
+const startBtn = document.getElementById("start-btn");
+
+function handleStart() {
+  if (appState.match.phase !== "ready") return;
+  appState.match = startMatch(appState.config, now());
+  prevMatch = appState.match;
+  audio.handleMatchStart();
+  render(appState);
+}
+
+if (startBtn) startBtn.addEventListener("click", handleStart);
 
 function handlePause() {
   appState.match = pauseAction(appState.match, now());
@@ -104,7 +124,14 @@ function handlePause() {
 }
 
 function handleEndTurn(sideIndex) {
+  const prev = appState.match;
   appState.match = endTurn(appState.match, now(), sideIndex);
+  // If endTurn actually flipped the active player, reset cue flags so the
+  // incoming player gets a fresh per-segment audio state.
+  if (appState.match !== prev && appState.match.activeIndex !== prev.activeIndex) {
+    audio.handleEndTurn();
+  }
+  prevMatch = appState.match;
   render(appState);
 }
 
@@ -113,9 +140,20 @@ pauseBtn.addEventListener("click", handlePause);
 resetBtn.addEventListener("click", () => {
   if (window.confirm("¿Reiniciar la partida?")) {
     appState.match = resetAction(appState.match, appState.config);
+    prevMatch = appState.match;
+    audio.handleReset();
     render(appState);
   }
 });
+
+const muteBtn = document.getElementById("mute-btn");
+if (muteBtn) {
+  muteBtn.addEventListener("click", () => {
+    audio.setMuted(!audio.getMuted());
+    appState.muted = audio.getMuted();
+    render(appState);
+  });
+}
 
 installInput({
   onEndTurn: handleEndTurn,
@@ -129,6 +167,9 @@ installInput({
 function tick() {
   if (appState.match.phase === "running") {
     appState.match = recompute(appState.match, now());
+    const tags = derivePlayerVisualStateDelta(prevMatch, appState.match);
+    if (tags.length) audio.fireForDelta(tags);
+    prevMatch = appState.match;
   }
   render(appState);
   requestAnimationFrame(tick);
@@ -140,6 +181,9 @@ requestAnimationFrame(tick);
 document.addEventListener("visibilitychange", () => {
   if (!document.hidden && appState.match.phase === "running") {
     appState.match = recompute(appState.match, now());
+    const tags = derivePlayerVisualStateDelta(prevMatch, appState.match);
+    if (tags.length) audio.fireForDelta(tags);
+    prevMatch = appState.match;
     render(appState);
   }
 });

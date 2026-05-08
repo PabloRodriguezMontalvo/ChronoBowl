@@ -91,3 +91,59 @@ export function clearConfig() {
     console.warn("[bbtimer] could not clear config:", err);
   }
 }
+
+// ---------------------------------------------------------------------------
+// Audio preferences (feature 002 — turn-sounds)
+// Stored under a separate key so config and audio prefs evolve independently.
+// ---------------------------------------------------------------------------
+
+const AUDIO_KEY = "bbtimer.audio.v1";
+const AUDIO_SCHEMA_VERSION = 1;
+
+/** @returns {{schemaVersion:number, muted:boolean}} */
+export function defaultAudioPrefs() {
+  return { schemaVersion: AUDIO_SCHEMA_VERSION, muted: false };
+}
+
+/** Load audio prefs from localStorage. Falls back to defaults on any failure. */
+export function loadAudioPrefs() {
+  if (typeof localStorage === "undefined") return defaultAudioPrefs();
+  let raw;
+  try {
+    raw = localStorage.getItem(AUDIO_KEY);
+  } catch {
+    return defaultAudioPrefs();
+  }
+  if (!raw) return defaultAudioPrefs();
+
+  let parsed;
+  try {
+    parsed = JSON.parse(raw);
+  } catch {
+    return defaultAudioPrefs();
+  }
+
+  if (
+    !parsed ||
+    typeof parsed !== "object" ||
+    parsed.schemaVersion !== AUDIO_SCHEMA_VERSION ||
+    typeof parsed.muted !== "boolean"
+  ) {
+    return defaultAudioPrefs();
+  }
+  return { schemaVersion: AUDIO_SCHEMA_VERSION, muted: parsed.muted };
+}
+
+/** Persist audio prefs. Best-effort. */
+export function saveAudioPrefs(prefs) {
+  if (typeof localStorage === "undefined") return;
+  try {
+    const payload = {
+      schemaVersion: AUDIO_SCHEMA_VERSION,
+      muted: Boolean(prefs?.muted),
+    };
+    localStorage.setItem(AUDIO_KEY, JSON.stringify(payload));
+  } catch (err) {
+    console.warn("[bbtimer] could not persist audio prefs:", err);
+  }
+}
