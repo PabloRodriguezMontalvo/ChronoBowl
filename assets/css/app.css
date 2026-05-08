@@ -8,7 +8,7 @@
    ============================================================================ */
 
 :root {
-  /* Base palette */
+  /* Base palette (brand-invariant: identical in both themes) */
   --color-purple-deep: hsl(251, 79%, 15%);   /* page background */
   --color-purple-mid:  hsl(252, 60%, 60%);   /* active-normal accent */
   --color-purple-soft: hsl(252, 45%, 78%);   /* subtle highlights */
@@ -17,9 +17,7 @@
   --color-white:       #ffffff;
   --color-black:       #1a1a1a;
 
-  /* State tokens (kept names for backwards compatibility) */
-  --color-inactive-bg: hsl(0, 0%, 96%);
-  --color-inactive-fg: hsl(0, 0%, 30%);
+  /* State tokens (brand-invariant; consumed by .player-card variants) */
   --color-active-normal-bg: var(--color-purple-mid);
   --color-active-normal-fg: var(--color-white);
   --color-active-warning-bg: var(--color-gold);          /* dorado, no naranja */
@@ -28,6 +26,82 @@
   --color-active-danger-fg: var(--color-white);
   --color-paused-banner-bg: rgba(20, 20, 20, 0.85);
   --color-paused-banner-fg: var(--color-white);
+
+  /* Role tokens (theme-variant: dark defaults here, light overrides in the
+     @media block below). Every rule body that needs a themed value MUST
+     consume one of these tokens; literal hex/HSL inside rule bodies is
+     forbidden by contracts/theme-tokens-contract.md §5. */
+  --color-page-bg:             var(--color-purple-deep);
+  --color-page-fg:             var(--color-white);
+  --color-page-fg-muted:       hsla(0, 0%, 100%, 0.85);   /* ~12:1 on deep purple */
+  --color-link:                var(--color-gold);
+  --color-link-hover:          hsl(45, 95%, 75%);
+  --color-card-inactive-bg:    hsl(0, 0%, 96%);
+  --color-card-inactive-fg:    hsl(0, 0%, 30%);
+  --color-form-box-bg:         var(--color-white);
+  --color-form-box-border:     hsla(45, 85%, 60%, 0.25);
+  --color-form-box-shadow:     0 8px 32px rgba(0, 0, 0, 0.35);
+  --color-controls-bar-bg:     hsl(0, 0%, 100%);
+  --color-controls-bar-border: hsl(0, 0%, 90%);
+
+  /* Backwards-compat aliases (deprecated; new code MUST use the
+     --color-card-inactive-* tokens above). Kept temporarily because no
+     external rule consumes them after this refactor; safe to delete in a
+     later cleanup. */
+  --color-inactive-bg: var(--color-card-inactive-bg);
+  --color-inactive-fg: var(--color-card-inactive-fg);
+}
+
+/* --- Light theme (prefers-color-scheme: light) -----------------------
+   Re-declares ONLY the role tokens above; brand-invariant tokens are
+   never redeclared here — they carry across themes (see contract §1).
+   Light-theme-only button tokens (--color-button-light-*) are introduced
+   here because Bulma's default .button.is-light rendering is acceptable
+   in dark mode; they exist solely to give us ≥3:1 against the
+   light-tinted-purple page (FR-003 / contract §4). ---------------------- */
+@media (prefers-color-scheme: light) {
+  :root {
+    --color-page-bg:             hsl(252, 30%, 96%);
+    --color-page-fg:             #1a1a1a;
+    --color-page-fg-muted:       hsla(0, 0%, 0%, 0.65);
+    --color-link:                var(--color-gold-deep);
+    --color-link-hover:          hsl(40, 75%, 35%);
+    --color-card-inactive-bg:    hsl(252, 15%, 88%);
+    --color-card-inactive-fg:    hsl(0, 0%, 20%);
+    --color-form-box-bg:         var(--color-white);
+    --color-form-box-border:     hsla(45, 85%, 60%, 0.55);
+    --color-form-box-shadow:     0 4px 16px rgba(31, 13, 77, 0.12);
+    --color-controls-bar-bg:     hsl(0, 0%, 100%);
+    --color-controls-bar-border: hsla(252, 30%, 40%, 0.18);
+
+    /* Light-theme-only button tokens (no dark-theme counterpart —
+       Bulma's default rendering is fine on the deep-purple page). */
+    --color-button-light-bg:     hsl(252, 25%, 88%);
+    --color-button-light-fg:     hsl(0, 0%, 15%);
+    --color-button-light-border: hsla(252, 30%, 40%, 0.35);
+  }
+
+  /* --- Bulma overrides (light theme only) --------------------------------
+     Bulma 1.x ships its own @media (prefers-color-scheme: light) block that
+     flips its CSS custom properties for light mode. The rules below
+     re-anchor the elements whose Bulma-resolved color does not match our
+     chosen role token, defeating that flip while keeping Bulma's geometry
+     and typography intact. Only the minimum set is overridden; each entry
+     maps to a row in contracts/theme-tokens-contract.md §4. */
+
+  /* Reset / Sound buttons sit on .match-controls (white). On the
+     light-tinted-purple page they need a darker fill to retain ≥3:1. */
+  .match-controls .button.is-light,
+  #reset-btn.button.is-light,
+  #mute-btn.button.is-light {
+    background-color: var(--color-button-light-bg);
+    color: var(--color-button-light-fg);
+    border-color: var(--color-button-light-border);
+  }
+
+  /* Form-box internals: Bulma's light-mode .label/.input/.help foregrounds
+     are dark-on-white, which is what we want inside the white .box. We
+     therefore do NOT override them here — Bulma's defaults are correct. */
 }
 
 /* --- Layout helpers (replaces inline style="..." usage) ---------------- */
@@ -42,8 +116,8 @@ html, body {
 }
 
 body {
-  background: var(--color-purple-deep);
-  color: var(--color-white);
+  background: var(--color-page-bg);
+  color: var(--color-page-fg);
   min-height: 100vh;
   margin: 0;
 }
@@ -54,13 +128,14 @@ body {
 }
 
 /* Bulma's default heading colours assume a light page; on the deep-purple
-   background they fail WCAG. Force white / translucent-white for accessibility. */
+   background they fail WCAG. Force role-token colors so each theme picks
+   the appropriate value (white-on-purple in dark, dark-on-light in light). */
 #config-screen .title,
 #config-screen .subtitle {
-  color: var(--color-white);
+  color: var(--color-page-fg);
 }
 #config-screen .subtitle {
-  color: hsla(0, 0%, 100%, 0.85);  /* ~12:1 contrast on deep purple */
+  color: var(--color-page-fg-muted);
 }
 
 /* Help / shortcut text outside the form box. */
@@ -68,7 +143,7 @@ body {
 #config-screen .content p,
 #config-screen .content .has-text-grey,
 #config-screen .has-text-grey {
-  color: hsla(0, 0%, 100%, 0.78) !important; /* ~10:1 on deep purple */
+  color: var(--color-page-fg-muted) !important;
 }
 
 /* Accent: keyboard hints in dorado. */
@@ -82,24 +157,25 @@ body {
   box-shadow: 0 1px 0 var(--color-gold-deep);
 }
 
-/* Links inside the config screen → dorado for visibility on dark bg. */
+/* Links inside the config screen — dorado in dark theme, gold-deep in light. */
 #config-screen a {
-  color: var(--color-gold);
+  color: var(--color-link);
   text-decoration: underline;
   text-decoration-thickness: 1px;
   text-underline-offset: 2px;
 }
 #config-screen a:hover,
 #config-screen a:focus {
-  color: hsl(45, 95%, 75%);
+  color: var(--color-link-hover);
 }
 
-/* The form .box keeps Bulma's white background — inputs and labels are
-   already accessible on white. We just give it a subtle gold edge so it
-   reads as the primary action surface. */
+/* The form .box keeps Bulma's per-theme surface — Bulma already paints a
+   white background in light mode and a dark background in dark mode, and
+   its labels/inputs follow suit. We only re-skin the gold edge and shadow
+   so the box reads as the primary action surface against either page. */
 #config-form.box {
-  border: 1px solid hsla(45, 85%, 60%, 0.25);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+  border: 1px solid var(--color-form-box-border);
+  box-shadow: var(--color-form-box-shadow);
 }
 
 #config-form .button.is-large {
@@ -145,8 +221,8 @@ body {
     transform 150ms ease-out,
     filter 150ms ease-out,
     opacity 150ms ease-out;
-  background: var(--color-inactive-bg);
-  color: var(--color-inactive-fg);
+  background: var(--color-card-inactive-bg);
+  color: var(--color-card-inactive-fg);
 }
 
 .player-card .player-name {
@@ -255,8 +331,8 @@ body {
   gap: 0.5rem;
   justify-content: center;
   padding: 0.75rem 0.5rem calc(0.75rem + env(safe-area-inset-bottom));
-  background: hsl(0, 0%, 100%);
-  border-top: 1px solid hsl(0, 0%, 90%);
+  background: var(--color-controls-bar-bg);
+  border-top: 1px solid var(--color-controls-bar-border);
   position: sticky;
   bottom: 0;
   z-index: 5;
