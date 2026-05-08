@@ -59,7 +59,7 @@
             <div class="field is-grouped is-grouped-centered mt-md">
               <p class="control">
                 <button id="start-match-btn" class="button is-primary is-large" type="submit">
-                  Iniciar partida
+                  Crear partida
                 </button>
               </p>
             </div>
@@ -104,11 +104,17 @@
         </div>
 
         <div class="match-controls">
+          <button id="reset-btn" class="button is-light is-medium" type="button" aria-label="Reiniciar partida">
+            ↺ Reiniciar
+          </button>
+          <button id="start-btn" class="button is-primary is-medium" type="button" aria-label="Iniciar el cronómetro" hidden>
+            ▶ Empezar
+          </button>
           <button id="pause-btn" class="button is-warning is-medium" type="button" aria-label="Pausar o reanudar">
             ⏸ Pausa
           </button>
-          <button id="reset-btn" class="button is-light is-medium" type="button" aria-label="Reiniciar partida">
-            ↺ Reiniciar
+          <button id="mute-btn" class="button is-light is-medium" type="button" aria-label="Silenciar notificaciones de audio" aria-pressed="false">
+            🔊 Sonido
           </button>
         </div>
       </section>

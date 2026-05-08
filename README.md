@@ -43,10 +43,15 @@ node --test tests
 ├── index.html
 ├── .nojekyll
 ├── assets/
+│   ├── audio/{enter-reserve,exhausted}.wav
 │   ├── css/app.css
-│   ├── js/{main,state,render,input,storage}.js
+│   ├── js/{main,state,render,input,storage,audio}.js
 │   └── vendor/{bulma.min.css, animate.min.css}
 └── tests/*.test.mjs
 ```
 
-See [`specs/001-bloodbowl-timer/`](specs/001-bloodbowl-timer/) for the full specification, plan, and tasks.
+Audio cues are short procedurally-generated WAV files (≤24 KB total, peak ≤ -10 dBFS).
+A "🔊 Sonido / 🔇 Silencio" button under the timers toggles all sound; the choice is
+persisted in localStorage. See [`LICENSE-AUDIO.md`](LICENSE-AUDIO.md) for asset licensing.
+
+See [`specs/001-bloodbowl-timer/`](specs/001-bloodbowl-timer/) and [`specs/002-turn-sounds/`](specs/002-turn-sounds/) for the full specifications, plans, and tasks.

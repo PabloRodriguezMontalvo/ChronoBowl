@@ -16,6 +16,8 @@ function dom() {
     matchScreen: document.getElementById("match-screen"),
     pausedBanner: document.getElementById("paused-banner"),
     pauseBtn: document.getElementById("pause-btn"),
+    startBtn: document.getElementById("start-btn"),
+    muteBtn: document.getElementById("mute-btn"),
     cards: [
       document.getElementById("player-1-card"),
       document.getElementById("player-2-card"),
@@ -86,7 +88,8 @@ export function render(appState) {
 
   // Visual state per card
   for (let i = 0; i < 2; i++) {
-    const isActive = i === match.activeIndex && match.phase !== "idle";
+    const isActive =
+      i === match.activeIndex && match.phase !== "idle" && match.phase !== "ready";
     if (!isActive) {
       applyCardClasses(d.cards[i], ["is-inactive"]);
       continue;
@@ -121,4 +124,16 @@ export function render(appState) {
   d.body.classList.toggle("is-paused", isPaused);
   d.pausedBanner.hidden = !isPaused;
   d.pauseBtn.textContent = isPaused ? "▶ Reanudar" : "⏸ Pausa";
+
+  // Start vs Pause button visibility (phase 'ready' = pre-start)
+  const isReady = match.phase === "ready";
+  if (d.startBtn) d.startBtn.hidden = !isReady;
+  d.pauseBtn.hidden = isReady;
+
+  // Mute toggle (feature 002)
+  if (d.muteBtn) {
+    const muted = Boolean(appState.muted);
+    d.muteBtn.textContent = muted ? "🔇 Silencio" : "🔊 Sonido";
+    d.muteBtn.setAttribute("aria-pressed", muted ? "true" : "false");
+  }
 }
