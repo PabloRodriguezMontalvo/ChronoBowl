@@ -95,11 +95,19 @@ The implementation will expose these as pure functions for testability (see R-00
 ### `startMatch(config: Configuration): Match`
 Returns a fresh `Match` with `phase = "running"`, both players' clocks set from `config`, `activeIndex = 0`, and `turnStartedAtPerfNow = performance.now()`.
 
+### `idleMatch(config: Configuration): Match`
+Returns a fresh `Match` with `phase = "idle"`, both players' clocks set from `config` (full per-turn time and full reserve), `activeIndex = 0`, `turnStartedAtPerfNow = null`, and `lastEndTurnAtPerfNow = null`. Used as the initial app state on load and as the post-`reset` shape — guarantees `render(state)` always has a valid match to draw, regardless of phase.
+
 ### `recompute(match: Match, now: number): Match`
 For `phase === "running"`, computes `elapsed = now - match.turnStartedAtPerfNow`, applies the two-tier subtraction (R-003) to `match.players[activeIndex]`, and resets `turnStartedAtPerfNow = now` so subsequent calls accumulate correctly. Pure given `now`.
 
-### `endTurn(match: Match, now: number): Match`
-Rejects if `phase !== "running"` or if `now - lastEndTurnAtPerfNow < 150`. Otherwise: calls `recompute` first, restores `players[activeIndex].turnRemainingMs` to `config.turnSeconds * 1000`, flips `activeIndex`, sets `turnStartedAtPerfNow = now`, sets `lastEndTurnAtPerfNow = now`.
+### `endTurn(match: Match, now: number, sideIndex: 0 | 1): Match`
+Rejects (returns `match` unchanged) if any of:
+- `phase !== "running"` (FR-014 — pause locks input),
+- `sideIndex !== match.activeIndex` (FR-006 / FR-009 — only the active player's input flips the turn; pressing the inactive side's key or tapping the inactive card is a no-op),
+- `now - lastEndTurnAtPerfNow < 150` (FR-019 — debounce).
+
+Otherwise: calls `recompute(match, now)` first, restores `players[activeIndex].turnRemainingMs` to `config.turnSeconds * 1000`, flips `activeIndex`, sets `turnStartedAtPerfNow = now`, sets `lastEndTurnAtPerfNow = now`.
 
 ### `pause(match: Match, now: number): Match`
 If `phase === "running"`: calls `recompute(match, now)` then sets `phase = "paused"`, `turnStartedAtPerfNow = null`. If `phase === "paused"`: sets `phase = "running"`, `turnStartedAtPerfNow = now` (resume). Otherwise no-op.
@@ -117,6 +125,7 @@ Equivalent to `{ ...startMatch(config), phase: "idle", turnStartedAtPerfNow: nul
 | `reserveSeconds >= 0` and `<= 3600`                                       | FR-003, FR-004       |
 | Empty player names fall back to `"Player 1"` / `"Player 2"`               | FR-002, edge cases   |
 | `endTurn` is rejected while `paused`                                      | FR-014               |
+| `endTurn` is rejected when `sideIndex !== match.activeIndex`              | FR-006, FR-009       |
 | `endTurn` is rejected within 150 ms of previous accepted `endTurn`        | FR-019               |
 | Held key (`event.repeat === true`) does not flip the turn                 | FR-019               |
 | `turnRemainingMs` and `reserveRemainingMs` are floored at `0`             | FR-012               |

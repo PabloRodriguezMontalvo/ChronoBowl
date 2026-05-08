@@ -1,0 +1,235 @@
+/* ============================================================================
+   Cronómetro Blood Bowl — app styles
+   Layered on top of Bulma 1.x and Animate.css 4.x.
+   Six visual states (per contracts/ui-contract.md §2):
+     inactive · active-normal · active-in-reserve · active-exhausted · paused · idle
+   ============================================================================ */
+
+:root {
+  --color-inactive-bg: hsl(0, 0%, 96%);
+  --color-inactive-fg: hsl(0, 0%, 40%);
+  --color-active-normal-bg: hsl(252, 60%, 60%);   /* matches Bulma is-primary purple-ish */
+  --color-active-normal-fg: #ffffff;
+  --color-active-warning-bg: hsl(35, 95%, 55%);   /* Bulma is-warning */
+  --color-active-warning-fg: #1a1a1a;
+  --color-active-danger-bg: hsl(348, 86%, 55%);   /* Bulma is-danger */
+  --color-active-danger-fg: #ffffff;
+  --color-paused-banner-bg: rgba(20, 20, 20, 0.85);
+  --color-paused-banner-fg: #ffffff;
+}
+
+/* --- Layout helpers (replaces inline style="..." usage) ---------------- */
+.mt-md { margin-top: 1.5rem; }
+.mt-sm { margin-top: 1rem; }
+
+/* Ensure [hidden] always wins over author display rules. */
+[hidden] { display: none !important; }
+
+html, body {
+  height: 100%;
+}
+
+body {
+  background: hsl(0, 0%, 98%);
+  min-height: 100vh;
+  margin: 0;
+}
+
+/* --- Configuration screen --------------------------------------------- */
+#config-screen .container {
+  max-width: 480px;
+}
+
+#config-form .button.is-large {
+  min-width: 12rem;
+  min-height: 44px;
+}
+
+/* --- Match screen ----------------------------------------------------- */
+#match-screen {
+  /* Override Bulma's section padding so the cards can fill the viewport. */
+  padding: 0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.match-container {
+  display: flex;
+  flex: 1 1 auto;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  /* Side-by-side on landscape / desktop. */
+  flex-direction: row;
+}
+
+.player-card {
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  border-radius: 12px;
+  padding: 1rem;
+  min-height: 44px;
+  cursor: pointer;
+  -webkit-user-select: none;
+  user-select: none;
+  touch-action: manipulation;
+  transition:
+    background-color 150ms ease-out,
+    color 150ms ease-out,
+    transform 150ms ease-out,
+    filter 150ms ease-out,
+    opacity 150ms ease-out;
+  background: var(--color-inactive-bg);
+  color: var(--color-inactive-fg);
+}
+
+.player-card .player-name {
+  font-size: clamp(1.25rem, 4vw, 2rem);
+  font-weight: 700;
+  margin: 0 0 0.5rem 0;
+  word-break: break-word;
+}
+
+.player-card .turn-clock {
+  font-size: clamp(3rem, 14vw, 8rem);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+
+.player-card .reserve-label {
+  margin: 0.75rem 0 0 0;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  opacity: 0.75;
+}
+
+.player-card .reserve-clock {
+  font-size: clamp(1.25rem, 4vw, 2rem);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  opacity: 0.85;
+}
+
+/* --- State: inactive (default styling already above) ------------------ */
+.player-card.is-inactive {
+  opacity: 0.7;
+  transform: scale(0.97);
+}
+
+/* --- State: active-normal --------------------------------------------- */
+.player-card.is-active-normal {
+  background: var(--color-active-normal-bg);
+  color: var(--color-active-normal-fg);
+  transform: scale(1);
+  box-shadow: 0 8px 24px rgba(121, 87, 213, 0.35);
+}
+
+/* --- State: active-in-reserve ----------------------------------------- */
+.player-card.is-active-in-reserve {
+  background: var(--color-active-warning-bg);
+  color: var(--color-active-warning-fg);
+  transform: scale(1);
+  box-shadow: 0 8px 24px rgba(255, 170, 0, 0.4);
+  /* Override Animate.css default duration to make the pulse faster. */
+  animation-duration: 0.6s !important;
+}
+
+/* --- State: active-exhausted ------------------------------------------ */
+.player-card.is-active-exhausted {
+  background: var(--color-active-danger-bg);
+  color: var(--color-active-danger-fg);
+  transform: scale(1);
+  box-shadow: 0 8px 24px rgba(241, 70, 104, 0.45);
+  animation-duration: 0.8s !important;
+}
+
+/* --- State: paused (applied to body / match-screen) ------------------- */
+.is-paused .player-card {
+  filter: grayscale(80%);
+}
+.is-paused .player-card.is-active-normal,
+.is-paused .player-card.is-active-in-reserve,
+.is-paused .player-card.is-active-exhausted {
+  /* Darken digits to keep WCAG AA 4.5:1 contrast against desaturated background. */
+  color: #1a1a1a;
+}
+
+.paused-banner {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.paused-banner[hidden] {
+  display: none;
+}
+
+.paused-banner .paused-text {
+  background: var(--color-paused-banner-bg);
+  color: var(--color-paused-banner-fg);
+  padding: 0.75rem 2rem;
+  border-radius: 999px;
+  font-weight: 800;
+  font-size: clamp(1rem, 4vw, 1.5rem);
+  letter-spacing: 0.1em;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+}
+
+/* --- Match controls --------------------------------------------------- */
+.match-controls {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  padding: 0.75rem 0.5rem calc(0.75rem + env(safe-area-inset-bottom));
+  background: hsl(0, 0%, 100%);
+  border-top: 1px solid hsl(0, 0%, 90%);
+  position: sticky;
+  bottom: 0;
+  z-index: 5;
+}
+
+.match-controls .button {
+  min-height: 44px;
+  min-width: 44px;
+  font-weight: 600;
+}
+
+/* --- Responsive ------------------------------------------------------- */
+@media (max-width: 600px) {
+  .match-container {
+    flex-direction: column;
+  }
+}
+
+@media (orientation: landscape) and (max-width: 900px) {
+  /* Side-by-side on small landscape phones to maximise per-card area. */
+  .match-container {
+    flex-direction: row;
+  }
+}
+
+/* --- Reduced motion --------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  /* Disable Animate.css continuous animations on the active card; keep color
+     and size differentiation so visual states remain distinguishable. */
+  .player-card.animate__animated,
+  .player-card.is-active-normal,
+  .player-card.is-active-in-reserve,
+  .player-card.is-active-exhausted {
+    animation: none !important;
+  }
+  .player-card {
+    transition-duration: 0ms;
+  }
+}

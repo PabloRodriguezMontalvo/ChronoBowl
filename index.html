@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#7957d5" />
+    <title>Cronómetro Blood Bowl</title>
+    <link rel="stylesheet" href="./assets/vendor/bulma.min.css" />
+    <link rel="stylesheet" href="./assets/vendor/animate.min.css" />
+    <link rel="stylesheet" href="./assets/css/app.css" />
+  </head>
+  <body>
+    <noscript>
+      <p style="padding: 1rem; background: #ffdd57; color: #000;">
+        Esta aplicación necesita JavaScript para funcionar.
+      </p>
+    </noscript>
+
+    <main>
+      <!-- ========== Configuration screen ========== -->
+      <section id="config-screen" class="section">
+        <div class="container">
+          <h1 class="title is-2 has-text-centered">Cronómetro Blood Bowl</h1>
+          <p class="subtitle has-text-centered">Reloj de turnos para partidas de Blood Bowl</p>
+
+          <form id="config-form" class="box" novalidate>
+            <div class="field">
+              <label class="label" for="cfg-name-1">Jugador 1</label>
+              <div class="control">
+                <input id="cfg-name-1" class="input" type="text" maxlength="24" placeholder="Player 1" autocomplete="off" />
+              </div>
+            </div>
+
+            <div class="field">
+              <label class="label" for="cfg-name-2">Jugador 2</label>
+              <div class="control">
+                <input id="cfg-name-2" class="input" type="text" maxlength="24" placeholder="Player 2" autocomplete="off" />
+              </div>
+            </div>
+
+            <div class="field">
+              <label class="label" for="cfg-turn-seconds">Tiempo por turno (segundos)</label>
+              <div class="control">
+                <input id="cfg-turn-seconds" class="input" type="number" min="1" max="3600" step="1" value="240" inputmode="numeric" />
+              </div>
+              <p class="help">Por defecto: 240 (4 minutos).</p>
+            </div>
+
+            <div class="field">
+              <label class="label" for="cfg-reserve-seconds">Tiempo de reserva (segundos)</label>
+              <div class="control">
+                <input id="cfg-reserve-seconds" class="input" type="number" min="0" max="3600" step="1" value="0" inputmode="numeric" />
+              </div>
+              <p class="help">Pool de tiempo extra que se consume cuando se agota el turno. 0 = modo estricto.</p>
+            </div>
+
+            <p id="cfg-error" class="help is-danger" hidden></p>
+
+            <div class="field is-grouped is-grouped-centered mt-md">
+              <p class="control">
+                <button id="start-match-btn" class="button is-primary is-large" type="submit">
+                  Iniciar partida
+                </button>
+              </p>
+            </div>
+
+            <div class="has-text-centered mt-sm">
+              <button id="clear-config-btn" class="button is-text is-small" type="button">
+                Borrar configuración guardada
+              </button>
+            </div>
+          </form>
+
+          <div class="content has-text-centered is-size-7 has-text-grey">
+            <p>
+              Atajos: pulsa <kbd>A</kbd> para terminar el turno del Jugador 1,
+              <kbd>L</kbd> para el del Jugador 2, <kbd>Espacio</kbd> para pausar/reanudar.
+              En móvil, toca tu mitad de la pantalla.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========== Match screen ========== -->
+      <section id="match-screen" class="section" hidden>
+        <div id="match-container" class="match-container">
+          <article id="player-1-card" class="player-card" data-side="0">
+            <h2 class="player-name" id="player-1-name">Player 1</h2>
+            <time class="turn-clock" id="player-1-turn" aria-live="polite" aria-label="Tiempo de turno del jugador 1">4:00</time>
+            <p class="reserve-label">Reserva</p>
+            <time class="reserve-clock" id="player-1-reserve" aria-live="polite" aria-label="Tiempo de reserva del jugador 1">0:00</time>
+          </article>
+
+          <article id="player-2-card" class="player-card" data-side="1">
+            <h2 class="player-name" id="player-2-name">Player 2</h2>
+            <time class="turn-clock" id="player-2-turn" aria-live="polite" aria-label="Tiempo de turno del jugador 2">4:00</time>
+            <p class="reserve-label">Reserva</p>
+            <time class="reserve-clock" id="player-2-reserve" aria-live="polite" aria-label="Tiempo de reserva del jugador 2">0:00</time>
+          </article>
+        </div>
+
+        <div class="paused-banner" id="paused-banner" hidden>
+          <span class="paused-text">⏸ PAUSADO</span>
+        </div>
+
+        <div class="match-controls">
+          <button id="pause-btn" class="button is-warning is-medium" type="button" aria-label="Pausar o reanudar">
+            ⏸ Pausa
+          </button>
+          <button id="reset-btn" class="button is-light is-medium" type="button" aria-label="Reiniciar partida">
+            ↺ Reiniciar
+          </button>
+        </div>
+      </section>
+    </main>
+
+    <script type="module" src="./assets/js/main.js"></script>
+  </body>
+</html>

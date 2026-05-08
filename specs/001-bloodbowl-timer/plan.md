@@ -14,10 +14,10 @@ The full set of technology decisions, alternatives, and rationale is in [researc
 **Language/Version**: HTML5, CSS3, JavaScript (ES2022, ES modules, no transpiler).  
 **Primary Dependencies**: Bulma 1.x (vendored CSS) + Animate.css 4.x (vendored CSS). No JavaScript libraries. No package manager required.  
 **Storage**: `localStorage` for `Configuration` only (key `bbtimer.config.v1`). No databases. No backend.  
-**Testing**: Node 20+ built-in test runner (`node --test`) for the pure clock-and-transition logic; manual acceptance walkthrough per [quickstart.md](quickstart.md) for UI behaviour.  
+**Testing**: Node 20+ built-in test runner (`node --test`) for the pure clock-and-transition logic; manual acceptance walkthrough per [quickstart.md](quickstart.md) for UI behaviour. **Node is a development-time dependency only**; it is never shipped to GitHub Pages and is not required to view, install, or use the deployed site.
 **Target Platform**: Modern evergreen browsers (Chrome, Edge, Safari, Firefox) on desktop and mobile. Static hosting on GitHub Pages.  
 **Project Type**: Single static web page (no frontend/backend split).  
-**Performance Goals**: < 2 s page-load on 4G (SC-005); ±1 s cumulative timer drift across a 30-turn match including 60 s of backgrounding (SC-003); turn switch within 200 ms of input (SC-004); 60 fps render while visible.  
+**Performance Goals**: time-to-interactive < 2 s on a typical 4G mobile connection (per SC-005); ±1 s cumulative timer drift across a 30-turn match including 60 s of backgrounding (SC-003); turn switch within 200 ms of input (SC-004); 60 fps render while visible.
 **Constraints**: Fully offline-capable after first load (FR-020); no network calls at runtime; no build step (deployable by pushing static files to `main`); no third-party CDN dependencies; tap targets ≥ 44×44 px (SC-007); usable from 320 px viewports up (FR-018).  
 **Scale/Scope**: Two simultaneous players on one device, one match at a time. ~5 source files, ~500 LOC of vanilla JS, ~200 LOC of custom CSS layered on Bulma + Animate.css.
 

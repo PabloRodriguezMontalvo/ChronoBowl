@@ -1,0 +1,10 @@
+{
+  "name": "cronometro-bloodbowl",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Static chess-clock-style turn timer for Blood Bowl. No build, no runtime dependencies.",
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests"
+  }
+}

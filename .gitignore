@@ -1,0 +1,16 @@
+# OS junk
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor / IDE
+*.swp
+*.swo
+*~
+.idea/
+
+# Logs
+*.log
+
+# Note: assets/vendor/ MUST be committed (Bulma + Animate.css are vendored
+# locally to satisfy the "offline after first load" requirement).
