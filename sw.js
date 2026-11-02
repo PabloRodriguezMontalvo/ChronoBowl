@@ -39,15 +39,15 @@ async function precacheShellAssets(cache) {
 
     const html = await response.text();
     const urls = new Set(
-      [...html.matchAll(/(?:src|href)="((?:\.\/|\/)?assets\/[^\"]+)"/g)].map((match) => match[1]),
+      [...html.matchAll(/(?:src|href)="((?:\./|\/)?assets\/[^"]+)"/g)].map((match) => match[1]),
     );
 
     for (const url of [...urls].filter((entry) => entry.endsWith(".js"))) {
       try {
         const scriptResponse = await fetch(url);
-        if (!scriptResponse.ok) continue;
-        const script = await scriptResponse.text();
+        if (!scriptResponse.ok || scriptResponse.status === 206) continue;
 
+        const script = await scriptResponse.text();
         for (const match of script.matchAll(/assets\/[\w.-]+\.(?:js|css|woff2?|png|svg)/g)) {
           const asset = match[0];
           urls.add(asset.startsWith("./") || asset.startsWith("/") ? asset : `./${asset}`);
@@ -88,11 +88,16 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
+  // Range requests are partial responses; Cache API does not support them.
+  if (request.headers.has("range")) {
+    return;
+  }
+
   if (request.mode === "navigate") {
     event.respondWith(
       fetch(request)
         .then((response) => {
-          if (response.ok) {
+          if (response.ok && response.status !== 206) {
             const copy = response.clone();
             caches.open(CACHE).then((cache) => cache.put("./index.html", copy));
           }
@@ -108,7 +113,7 @@ self.addEventListener("fetch", (event) => {
       (cached) =>
         cached ||
         fetch(request).then((response) => {
-          if (response.ok) {
+          if (response.ok && response.status !== 206) {
             const copy = response.clone();
             caches.open(CACHE).then((cache) => cache.put(request, copy));
           }
