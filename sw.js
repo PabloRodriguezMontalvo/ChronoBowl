@@ -39,7 +39,7 @@ async function precacheShellAssets(cache) {
 
     const html = await response.text();
     const urls = new Set(
-      [...html.matchAll(/(?:src|href)="((?:\./|\/)?assets\/[^"]+)"/g)].map((match) => match[1]),
+      [...html.matchAll(/(?:src|href)="((?:\.\/|\/)?assets\/[^"]+)"/g)].map((match) => match[1]),
     );
 
     for (const url of [...urls].filter((entry) => entry.endsWith(".js"))) {
