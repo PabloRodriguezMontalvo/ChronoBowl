@@ -64,6 +64,22 @@ export function idleMatch(config) {
 }
 
 /**
+ * Returns a fresh match that is ready to start, but still waiting for the user
+ * to press "Empezar". This matches the UI contract already encoded in render.js.
+ */
+export function readyMatch(config) {
+  return {
+    phase: "ready",
+    mode: config.mode === "per-match" ? "per-match" : "per-turn",
+    players: buildPlayers(config),
+    activeIndex: 0,
+    turnStartedAtPerfNow: null,
+    lastEndTurnAtPerfNow: null,
+    config,
+  };
+}
+
+/**
  * Start a fresh running match. `now` is injectable for tests; falls back to
  * `performance.now()` in the browser.
  */
@@ -347,3 +363,4 @@ function currentNow() {
   }
   return Date.now();
 }
+
