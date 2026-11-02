@@ -1,8 +1,12 @@
-// Service worker for offline launch.
-// Bump CACHE (bb-roster-vN) whenever the caching logic in this file changes,
-// so old caches are deleted on activate.
-const CACHE = 'bb-roster-v1'
-const PRECACHE = ['/', '/index.html', '/manifest.webmanifest', '/favicon.svg', '/icons/icon-192.png', '/icons/icon-512.png']
+const CACHE = 'bb-roster-v2'
+const PRECACHE = [
+  './',
+  './index.html',
+  './manifest.webmanifest',
+  './favicon.svg',
+  './icons/icon-192.png',
+  './icons/icon-512.png',
+]
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
@@ -14,17 +18,23 @@ self.addEventListener('install', (event) => {
 })
 
 // The first page load happens before the worker controls it, so cache the hashed
-// Vite assets referenced by index.html to make the first online visit enough.
+// Vite assets referenced by index.html while respecting GitHub Pages repo paths.
 async function precacheShellAssets(cache) {
-  const response = await cache.match('/index.html')
+  const response = await cache.match('./index.html')
   if (!response) return
+
   const html = await response.text()
-  const urls = new Set([...html.matchAll(/(?:src|href)="(\/assets\/[^"]+)"/g)].map((match) => match[1]))
-  // Lazy chunks are referenced by name inside the entry scripts; include them too.
+  const urls = new Set(
+    [...html.matchAll(/(?:src|href)="((?:\.\/|\/)?assets\/[^\"]+)"/g)].map((match) => match[1]),
+  )
+
   for (const url of [...urls].filter((entry) => entry.endsWith('.js'))) {
     const script = await (await fetch(url)).text()
-    for (const match of script.matchAll(/assets\/[\w.-]+\.(?:js|css|woff2?|png|svg)/g)) urls.add(`/${match[0]}`)
+    for (const match of script.matchAll(/assets\/[\w.-]+\.(?:js|css|woff2?|png|svg)/g)) {
+      urls.add(match[0].startsWith('./') || match[0].startsWith('/') ? match[0] : `./${match[0]}`)
+    }
   }
+
   await cache.addAll([...urls])
 }
 
@@ -49,16 +59,16 @@ self.addEventListener('fetch', (event) => {
         .then((response) => {
           if (response.ok) {
             const copy = response.clone()
-            caches.open(CACHE).then((cache) => cache.put('/index.html', copy))
+            caches.open(CACHE).then((cache) => cache.put('./index.html', copy))
           }
           return response
         })
-        .catch(() => caches.match('/index.html', { ignoreSearch: true })),
+        .catch(() => caches.match('./index.html', { ignoreSearch: true })),
     )
     return
   }
 
-  // Cache-first for static assets (Vite assets are content-hashed).
+  // Cache-first for static assets.
   event.respondWith(
     caches.match(request, { ignoreVary: true }).then(
       (cached) =>
