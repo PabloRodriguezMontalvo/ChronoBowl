@@ -8,12 +8,22 @@ const PRECACHE = [
   './icons/icon-512.png',
 ]
 
+async function safeCacheAdd(cache, url) {
+  try {
+    await cache.add(url)
+  } catch (error) {
+    console.warn('[sw] skipped uncached asset:', url, error)
+  }
+}
+
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches
-      .open(CACHE)
-      .then((cache) => cache.addAll(PRECACHE).then(() => precacheShellAssets(cache)))
-      .then(() => self.skipWaiting()),
+    (async () => {
+      const cache = await caches.open(CACHE)
+      await Promise.allSettled(PRECACHE.map((url) => safeCacheAdd(cache, url)))
+      await precacheShellAssets(cache)
+      await self.skipWaiting()
+    })(),
   )
 })
 
@@ -25,7 +35,7 @@ async function precacheShellAssets(cache) {
 
   const html = await response.text()
   const urls = new Set(
-    [...html.matchAll(/(?:src|href)="((?:\.\/|\/)?assets\/[^\"]+)"/g)].map((match) => match[1]),
+    [...html.matchAll(/(?:src|href)="((?:\./|\/)?assets\/[^"]+)"/g)].map((match) => match[1]),
   )
 
   for (const url of [...urls].filter((entry) => entry.endsWith('.js'))) {
@@ -35,7 +45,7 @@ async function precacheShellAssets(cache) {
     }
   }
 
-  await cache.addAll([...urls])
+  await Promise.allSettled([...urls].map((url) => safeCacheAdd(cache, url)))
 }
 
 self.addEventListener('activate', (event) => {
