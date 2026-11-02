@@ -1,6 +1,7 @@
 import {
   defaultConfig,
   idleMatch,
+  readyMatch,
   startMatch,
   recompute,
   endTurn,
@@ -52,7 +53,10 @@ function showFormError(message) {
 }
 
 function syncModeFields() {
-  const mode = document.querySelector('input[name="cfg-mode"]:checked')?.value === "per-match" ? "per-match" : "per-turn";
+  const mode =
+    document.querySelector('input[name="cfg-mode"]:checked')?.value === "per-match"
+      ? "per-match"
+      : "per-turn";
   if (perTurnGroup) perTurnGroup.hidden = mode === "per-match";
   if (perMatchGroup) perMatchGroup.hidden = mode !== "per-match";
 }
@@ -95,7 +99,7 @@ function readFormConfig() {
   };
 }
 
-function startSelectedMatch(config) {
+function prepareSelectedMatch(config) {
   const validation = validateConfig(config);
   if (validation.error) {
     showFormError(validation.error);
@@ -103,9 +107,8 @@ function startSelectedMatch(config) {
   }
 
   saveConfig(validation.config);
-  appState.match = startMatch(validation.config);
+  appState.match = readyMatch(validation.config);
   appState.muted = audio.getMuted();
-  audio.handleMatchStart();
   render(appState);
 }
 
@@ -135,7 +138,7 @@ modeInputs.forEach((input) => {
 if (configForm) {
   configForm.addEventListener("submit", (event) => {
     event.preventDefault();
-    startSelectedMatch(readFormConfig());
+    prepareSelectedMatch(readFormConfig());
   });
 }
 
@@ -156,10 +159,7 @@ if (resetBtn) {
 
 if (startBtn) {
   startBtn.addEventListener("click", () => {
-    if (appState.match.phase === "idle") {
-      startSelectedMatch(appState.match.config);
-      return;
-    }
+    if (appState.match.phase !== "ready") return;
     appState.match = startMatch(appState.match.config, performance.now());
     appState.muted = audio.getMuted();
     audio.handleMatchStart();
