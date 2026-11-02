@@ -147,7 +147,73 @@ label,
 #config-screen .title,
 h1 {
   font-family: "RodchenkoCond-Bold", "Arial Narrow", sans-serif;
-  letter-spacing: 0.02em;
+  font-size: clamp(2.8rem, 7vw, 5.2rem);
+  line-height: 0.9;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-shadow: 0 2px 0 rgba(255, 202, 78, 0.18);
+}
+
+#config-screen .subtitle {
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.player-card .player-name {
+  font-family: "Redwing-Medium", "Segoe UI", sans-serif;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.player-card .turn-clock {
+  letter-spacing: -0.06em;
+}
+
+.match-controls .button {
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+@media (max-width: 480px) {
+  #config-screen .title,
+  h1 {
+    font-size: clamp(2.2rem, 8vw, 3.2rem);
+    line-height: 0.95;
+    letter-spacing: 0.05em;
+  }
+
+  #config-screen .subtitle {
+    font-size: 0.9rem;
+    letter-spacing: 0.06em;
+  }
+
+  .player-card {
+    padding: 0.75rem 0.5rem;
+  }
+
+  .player-card .player-name {
+    font-size: clamp(1rem, 4.6vw, 1.5rem);
+    letter-spacing: 0.08em;
+  }
+
+  .player-card .turn-clock {
+    font-size: clamp(2.4rem, 16vw, 5rem);
+  }
+
+  .player-card .reserve-label {
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+  }
+
+  .player-card .reserve-clock {
+    font-size: clamp(1rem, 4.5vw, 1.6rem);
+  }
+
+  .match-controls .button {
+    min-height: 42px;
+    font-size: 0.85rem;
+    letter-spacing: 0.08em;
+  }
 }
 
 /* --- Layout helpers (replaces inline style="..." usage) ---------------- */
@@ -436,44 +502,4 @@ body {
   .player-card {
     transition-duration: 0ms;
   }
-}
-#config-screen .title,
-h1 {
-  font-family: "RodchenkoCond-Bold", "Arial Narrow", sans-serif;
-  font-size: clamp(2.6rem, 7vw, 5rem);
-  line-height: 0.95;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-
-body,
-button,
-input,
-textarea,
-select,
-label,
-.help,
-.content,
-#config-form .label,
-#config-form .input,
-#config-form .help,
-.player-card,
-.match-controls .button {
-  font-family: "Redwing-Medium", "Segoe UI", sans-serif;
-  letter-spacing: 0.01em;
-}
-
-.player-card .player-name {
-  font-family: "Redwing-Medium", "Segoe UI", sans-serif;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.player-card .turn-clock {
-  letter-spacing: -0.05em;
-}
-
-.match-controls .button {
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
 }
