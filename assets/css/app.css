@@ -437,3 +437,43 @@ body {
     transition-duration: 0ms;
   }
 }
+#config-screen .title,
+h1 {
+  font-family: "RodchenkoCond-Bold", "Arial Narrow", sans-serif;
+  font-size: clamp(2.6rem, 7vw, 5rem);
+  line-height: 0.95;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+body,
+button,
+input,
+textarea,
+select,
+label,
+.help,
+.content,
+#config-form .label,
+#config-form .input,
+#config-form .help,
+.player-card,
+.match-controls .button {
+  font-family: "Redwing-Medium", "Segoe UI", sans-serif;
+  letter-spacing: 0.01em;
+}
+
+.player-card .player-name {
+  font-family: "Redwing-Medium", "Segoe UI", sans-serif;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.player-card .turn-clock {
+  letter-spacing: -0.05em;
+}
+
+.match-controls .button {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
