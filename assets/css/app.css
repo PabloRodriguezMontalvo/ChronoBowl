@@ -7,6 +7,22 @@
    All foreground/background pairs target WCAG AA (≥4.5:1 normal, ≥3:1 large).
    ============================================================================ */
 
+@font-face {
+  font-family: "RodchenkoCond-Bold";
+  src: url("../../fonts/RodchenkoCond-Bold.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Redwing-Medium";
+  src: url("../../fonts/Redwing-Medium.otf") format("opentype");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
   /* Base palette (brand-invariant: identical in both themes) */
   --color-purple-deep: hsl(251, 79%, 15%);   /* page background */
@@ -102,6 +118,36 @@
   /* Form-box internals: Bulma's light-mode .label/.input/.help foregrounds
      are dark-on-white, which is what we want inside the white .box. We
      therefore do NOT override them here — Bulma's defaults are correct. */
+}
+
+/* --- Typography -------------------------------------------------------- */
+body,
+button,
+input,
+textarea,
+select,
+label,
+.help,
+.content,
+#config-screen .content,
+#config-screen .subtitle,
+.player-card,
+.player-card .player-name,
+.player-card .reserve-label,
+.player-card .reserve-clock,
+.player-card .turn-clock,
+.match-controls .button,
+.notification,
+#config-form .label,
+#config-form .input,
+#config-form .help {
+  font-family: "Redwing-Medium", "Segoe UI", sans-serif;
+}
+
+#config-screen .title,
+h1 {
+  font-family: "RodchenkoCond-Bold", "Arial Narrow", sans-serif;
+  letter-spacing: 0.02em;
 }
 
 /* --- Layout helpers (replaces inline style="..." usage) ---------------- */
